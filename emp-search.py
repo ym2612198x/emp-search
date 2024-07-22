@@ -1023,11 +1023,12 @@ OTHER = '\033[38;5;208m'
 # args
 arg_parser = argparse.ArgumentParser(description='Bing and Google employee name scraper')
 arg_parser.add_argument('-c', '--company', required=True, help='Company name')
-
+arg_parser.add_argument('-o', '--output', required=True, help='Results output file')
 args = arg_parser.parse_args()
+
+
 company = args.company
 company = company.replace(" ","%20")
-
 
 def soup_bing(html):
     names_list = []
@@ -1051,12 +1052,13 @@ def soup_google(html):
 
 
 def search_google(company, header, pageNumber):
-    print(f"[*] Searching Google with offset {pageNumber}")
+
+    print(f"[*] Search offset:\t{pageNumber}")
     if pageNumber == 0:
         page = requests.get('https://www.google.com/search?q=site%3alinkedin.com/in+%22'+company+'%22&num=100', headers=header)
     else:
         page = requests.get('https://www.google.com/search?q=site%3alinkedin.com/in+%22'+company+'%22&num=100&start='+str(pageNumber), headers=header)
-    print(f"[*] Status code: {page.status_code}")
+    print(f"[*] Status code:\t{page.status_code}")
     html = page.content
     if re.search("Our systems have detected unusual traffic from your computer network", page.text):
         print("[-] Unusual traffic detected")
@@ -1066,7 +1068,8 @@ def search_google(company, header, pageNumber):
 
 
 def search_bing(company, header, pageNumber):
-    print(f"[*] Searching Bing with offset {pageNumber}")
+
+    print(f"[*] Search offset:\t{pageNumber}")
     page = requests.get(f'https://www.bing.com/search?q=site%3Alinkedin.com/in+%22{company}%22&first={pageNumber}', headers=header)
     print(f"[*] Status code: {page.status_code}")
     html = page.content
@@ -1076,9 +1079,22 @@ def search_bing(company, header, pageNumber):
     return html
 
 
+def write_names(names_list):
+
+    try:
+        f = open(args.output, "w")
+        for name in names_list:
+            f.write(f"{name}\n")
+        f.close()
+    except:
+        print(f"[-] Error: Couldn't write to {args.output}")
+
+
 def searcher(engine, headers):
+
     names = []
     if engine == "google":
+        print(f"[*] Searching Google...")
         # first page search
         num = 0
         random_number = random.randint(0, (len(headers) - 1))
@@ -1094,6 +1110,7 @@ def searcher(engine, headers):
             names = names + soup_google(page)
 
     elif engine == "bing":
+        print(f"[*] Searching Bing...")
         for num in range(1, 51, 10):
             time.sleep(random.uniform(0.5,7))
             random_number = random.randint(0, (len(headers) - 1))
@@ -1109,10 +1126,15 @@ google_names = searcher("google", headers)
 # post process
 names = bing_names + google_names
 # Convert to lowercase
-lowercase_list = [item.lower() for item in names]
+lowercase_list = [item.lower().rstrip() for item in names]
 # deduplicate
 processed_list = sorted(list(set(lowercase_list)))
+name_list = []
 for name in processed_list:
+     # only get results like "john smith - company" so we dont end up with just random words
      if " - " in name:
           name = name.split(" - ")[0]
           print(name)
+          name_list.append(name)
+
+write_names(name_list)
