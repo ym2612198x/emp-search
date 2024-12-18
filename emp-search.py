@@ -1058,7 +1058,7 @@ def search_google(company, header, pageNumber):
         page = requests.get('https://www.google.com/search?q=site%3alinkedin.com/in+%22'+company+'%22&num=100', headers=header)
     else:
         page = requests.get('https://www.google.com/search?q=site%3alinkedin.com/in+%22'+company+'%22&num=100&start='+str(pageNumber), headers=header)
-    print(f"[*] Status code:\t{page.status_code}")
+    print(f"[*] Status code:\t\t{page.status_code}")
     html = page.content
     if re.search("Our systems have detected unusual traffic from your computer network", page.text):
         print("[-] Unusual traffic detected")
@@ -1071,7 +1071,7 @@ def search_bing(company, header, pageNumber):
 
     print(f"[*] Search offset:\t{pageNumber}")
     page = requests.get(f'https://www.bing.com/search?q=site%3Alinkedin.com/in+%22{company}%22&first={pageNumber}', headers=header)
-    print(f"[*] Status code: {page.status_code}")
+    print(f"[*] Status code:\t\t{page.status_code}")
     html = page.content
     if re.search("placeholder for bing captcha",page.text):
         return "jailed"
