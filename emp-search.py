@@ -1021,7 +1021,7 @@ OTHER = '\033[38;5;208m'
 
 
 # args
-arg_parser = argparse.ArgumentParser(description='Bing and Google employee name scraper')
+arg_parser = argparse.ArgumentParser(description='Company employee name scraper using Google and Bing LinkedIn results.')
 arg_parser.add_argument('-c', '--company', required=True, help='Company name')
 arg_parser.add_argument('-o', '--output', required=True, help='Results output file')
 args = arg_parser.parse_args()
@@ -1029,16 +1029,6 @@ args = arg_parser.parse_args()
 
 company = args.company
 company = company.replace(" ","%20")
-
-def soup_bing(html):
-    names_list = []
-    soup = BeautifulSoup(html, 'html.parser')
-    all_h2 = soup.find_all('h2')
-    all_a = soup.find_all('a')
-    for x in all_a:
-        names_list.append(x.text.rstrip())
-
-    return names_list
 
 
 def soup_google(html):
@@ -1066,6 +1056,15 @@ def search_google(company, header, pageNumber):
     
     return html
 
+def soup_bing(html):
+    names_list = []
+    soup = BeautifulSoup(html, 'html.parser')
+    all_h2 = soup.find_all('h2')
+    all_a = soup.find_all('a')
+    for x in all_a:
+        names_list.append(x.text.rstrip())
+
+    return names_list
 
 def search_bing(company, header, pageNumber):
 
@@ -1131,7 +1130,7 @@ lowercase_list = [item.lower().rstrip() for item in names]
 processed_list = sorted(list(set(lowercase_list)))
 name_list = []
 for name in processed_list:
-     # only get results like "john smith - company" so we dont end up with just random words
+     # only get results like "john smith - company" so we dont end up with just random words...hopefully
      if " - " in name:
           name = name.split(" - ")[0]
           print(name)
